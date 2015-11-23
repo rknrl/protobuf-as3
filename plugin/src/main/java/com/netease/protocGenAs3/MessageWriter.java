@@ -456,6 +456,7 @@ public class MessageWriter {
     private static void read(Scope<DescriptorProtos.DescriptorProto> scope, StringBuilder content) {
         content.append("\t\tpublic static function readFromSlice(input:IDataInput, bytesAfterSlice:uint):" + scope.proto.getName() + " {\n");
         readInitVars(scope, content);
+        content.append("\t\t\tvar afterSlice:uint;\n");
         content.append("\t\t\twhile (input.bytesAvailable > bytesAfterSlice) {\n");
         content.append("\t\t\t\tvar tag:uint = ReadUtils.read$TYPE_UINT32(input);\n");
         content.append("\t\t\t\tswitch (tag >>> 3) {\n");
@@ -520,9 +521,9 @@ public class MessageWriter {
         content.append("\t\t\t\t\t}\n");
         content.append("\t\t\t\t\t++" + fdp.getName() + "$count;\n");
         if (fdp.getType() == TYPE_MESSAGE) {
-            content.append("\t\t\t\t\tvar bytesAfterSlice: uint = ReadUtils.readBytesAfterSlice(input);\n");
-            content.append("\t\t\t\t\t" + Utils.lowerCamelCase(fdp.getName()) + " =  " + getAS3Type(scope, fdp) + ".readFromSlice(input, bytesAfterSlice);\n");
-            content.append("\t\t\t\t\tif (input.bytesAvailable != bytesAfterSlice) {\n");
+            content.append("\t\t\t\t\tafterSlice = ReadUtils.readBytesAfterSlice(input);\n");
+            content.append("\t\t\t\t\t" + Utils.lowerCamelCase(fdp.getName()) + " =  " + getAS3Type(scope, fdp) + ".readFromSlice(input, afterSlice);\n");
+            content.append("\t\t\t\t\tif (input.bytesAvailable != afterSlice) {\n");
             content.append("\t\t\t\t\t\tthrow new IOError('Invalid nested message');\n");
             content.append("\t\t\t\t\t}\n");
 
@@ -578,10 +579,10 @@ public class MessageWriter {
 
     private static void readRepeatedMessage(Scope<DescriptorProtos.DescriptorProto> scope, StringBuilder content, DescriptorProtos.FieldDescriptorProto fdp) {
         content.append("" +
-                "\t\t\t\t\tvar bytesAfterSlice: uint = ReadUtils.readBytesAfterSlice(input);\n" +
-                "\t\t\t\t\tconst " + fdp.getName() + "$element:" + getAS3Type(scope, fdp) + " = " + getAS3Type(scope, fdp) + ".readFromSlice(input, bytesAfterSlice);\n" +
+                "\t\t\t\t\tafterSlice = ReadUtils.readBytesAfterSlice(input);\n" +
+                "\t\t\t\t\tconst " + fdp.getName() + "$element:" + getAS3Type(scope, fdp) + " = " + getAS3Type(scope, fdp) + ".readFromSlice(input, afterSlice);\n" +
                 "\t\t\t\t\t" + Utils.lowerCamelCase(fdp.getName()) + ".push(" + fdp.getName() + "$element);\n" +
-                "\t\t\t\t\tif (input.bytesAvailable != bytesAfterSlice) {\n" +
+                "\t\t\t\t\tif (input.bytesAvailable != afterSlice) {\n" +
                 "\t\t\t\t\t\tthrow new IOError('Invalid nested message');\n" +
                 "\t\t\t\t\t}\n"
         );
