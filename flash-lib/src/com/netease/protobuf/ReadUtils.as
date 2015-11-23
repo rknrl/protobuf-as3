@@ -194,19 +194,15 @@ package com.netease.protobuf {
 			result.high = ZigZag.decode64high(low, high)
 			return result
 		}
-		public static function read$TYPE_MESSAGE(input:IDataInput,
-				message:IMessage):IMessage {
-			const length:uint = read$TYPE_UINT32(input)
+
+		public static function readBytesAfterSlice(input:IDataInput):uint {
+			const length:uint = read$TYPE_UINT32(input);
 			if (input.bytesAvailable < length) {
-				throw new IOError("Invalid message length: " + length)
+				throw new IOError("Invalid message length: " + length);
 			}
-			const bytesAfterSlice:uint = input.bytesAvailable - length
-			message.readFromSlice(input, bytesAfterSlice)
-			if (input.bytesAvailable != bytesAfterSlice) {
-				throw new IOError("Invalid nested message")
-			}
-			return message
+			return input.bytesAvailable - length;
 		}
+
 		public static function readPackedRepeated(input:IDataInput,
 				readFuntion:Function, value:Vector.<Object>):void {
 			const length:uint = read$TYPE_UINT32(input)

@@ -16,19 +16,7 @@
 // as listed at <url: http://www.opensource.org/licenses/bsd-license.php >.
 
 package com.netease.protobuf {
-	import flash.utils.IDataInput
-	/**
-	 *  @private
-	 */
-	public interface IMessage {
-		/**
-		 *  @private
-		 */
-		function readFromSlice(input:IDataInput, bytesAfterSlice:uint):void
-
-		/**
-		 *  @private
-		 */
-		function writeToBuffer(output:WritingBuffer):void
-	}
+public interface IMessage {
+    function writeToBuffer(output:WritingBuffer):void
+}
 }

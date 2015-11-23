@@ -8,6 +8,7 @@
     <artifactId>protobuf-as3</artifactId>
     <packaging>jar</packaging>
     <version>1.0</version>
+    <name>protobuf-as3</name>
 
     <dependencies>
         <dependency>
