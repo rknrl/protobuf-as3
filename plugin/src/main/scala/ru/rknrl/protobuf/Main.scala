@@ -11,7 +11,7 @@ package ru.rknrl.protobuf
 import java.io.{PrintWriter, StringWriter}
 
 import com.google.protobuf.DescriptorProtos.{DescriptorProto, EnumDescriptorProto}
-import google.protobuf.compiler.Plugin.{CodeGeneratorRequest, CodeGeneratorResponse}
+import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorResponse, CodeGeneratorRequest}
 import ru.rknrl.protobuf.Enums.enumContent
 import ru.rknrl.protobuf.Messages.messageContent
 

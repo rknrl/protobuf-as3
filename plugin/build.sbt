@@ -8,11 +8,11 @@ import sbtprotobuf.{ProtobufPlugin=>PB}
 
 Seq(PB.protobufSettings: _*)
 
-version in protobufConfig := "2.4.1"
+version in protobufConfig := "2.6.1"
 
 javaSource in PB.protobufConfig <<= (baseDirectory in Compile)(_ / "src/generated/java")
 
-protocOptions in PB.protobufConfig += "--proto_path=/Users/tolyayanot/dev/rknrl/protobuf-as2/plugin/src/main/proto"
+protocOptions in PB.protobufConfig += "--proto_path=/Users/tolyayanot/dev/rknrl/protobuf-as3/plugin/src/main/proto"
 
 test in assembly := {}
 
