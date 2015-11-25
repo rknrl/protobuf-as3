@@ -37,7 +37,7 @@ public final class Int64 {
     }
 
     public function toNumber():Number {
-        return low + high * MAX_UINT;
+        return low + high * 4294967296.0;
     }
 
     public function equals(o:Int64):Boolean {
