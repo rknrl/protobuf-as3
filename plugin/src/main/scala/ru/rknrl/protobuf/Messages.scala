@@ -294,7 +294,7 @@ object Messages {
       "\t\t\t\tcase " + Integer.toString(f.getNumber) + ":\n" +
         (f.getLabel match {
           case LABEL_REQUIRED | LABEL_OPTIONAL ⇒ checkAndIncreaseCount(f, d) + readField(f)
-          case LABEL_REPEATED ⇒ readRepeated(f) + readRepeated2(f)
+          case LABEL_REPEATED ⇒ readRepeated(f)
         }) +
         "\t\t\t\t\tbreak;\n"
     ).mkString
@@ -322,43 +322,18 @@ object Messages {
 
   def readRepeated(f: FieldDescriptorProto) =
     f.getType match {
-      case TYPE_DOUBLE |
-           TYPE_FLOAT |
-           TYPE_BOOL |
-           TYPE_INT32 |
-           TYPE_FIXED32 |
-           TYPE_UINT32 |
-           TYPE_SFIXED32 |
-           TYPE_SINT32 |
-           TYPE_INT64 |
-           TYPE_FIXED64 |
-           TYPE_UINT64 |
-           TYPE_SFIXED64 |
-           TYPE_SINT64 |
-           TYPE_ENUM ⇒ readRepeatedBasic(f)
-      case _ ⇒ ""
-    }
-
-  def readRepeated2(f: FieldDescriptorProto) =
-    f.getType match {
       case TYPE_MESSAGE ⇒ readRepeatedMessage(f)
 
       case TYPE_ENUM ⇒ readRepeatedEnum(f)
 
-      case _ ⇒ "\t\t\t\t\t" + fieldName(f) + ".push(" + readMethodName(f) + "(input));"
+      case _ ⇒ "\t\t\t\t\t" + fieldName(f) + ".push(" + readMethodName(f) + "(input));\n"
     }
-
-  def readRepeatedBasic(f: FieldDescriptorProto) =
-    "\t\t\t\t\tif ((tag & 7) == WireType.LENGTH_DELIMITED) {\n" +
-      "\t\t\t\t\t\tReadUtils.readPackedRepeated(input, " + readMethodName(f) + ", Vector.<Object>(" + fieldName(f) + "));\n" +
-      "\t\t\t\t\t\tbreak;\n" +
-      "\t\t\t\t\t}\n"
 
   def readRepeatedMessage(f: FieldDescriptorProto) =
     "\t\t\t\t\t" + fieldName(f) + ".push(" + as3Type(f) + ".parseDelimitedFrom(input));\n"
 
   def readRepeatedEnum(f: FieldDescriptorProto) =
-    "\t\t\t\t\t" + fieldName(f) + ".push(" + as3Type(f) + ".valuesById[" + readMethodName(f) + "(input)]);"
+    "\t\t\t\t\t" + fieldName(f) + ".push(" + as3Type(f) + ".valuesById[" + readMethodName(f) + "(input)]);\n"
 
   def readRequiredChecks(d: DescriptorProto) =
     d.getFieldList.filter(_.getLabel == LABEL_REQUIRED).map(f ⇒ readRequiredCheck(f, d)).mkString
