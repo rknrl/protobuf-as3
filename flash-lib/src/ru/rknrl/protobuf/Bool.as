@@ -6,7 +6,7 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
+package ru.rknrl.protobuf {
 public class Bool {
     public static const TRUE:Bool = new Bool(true);
     public static const FALSE:Bool = new Bool(false);
@@ -19,6 +19,10 @@ public class Bool {
 
     public function Bool(value:Boolean) {
         _value = value;
+    }
+
+    public function toString():String {
+        return _value.toString();
     }
 }
 }

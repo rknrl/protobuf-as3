@@ -6,8 +6,10 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
-public interface IMessage {
-    function writeToBuffer(output:WritingBuffer):void
+package ru.rknrl.protobuf {
+public interface Enum {
+    function get id():int;
+
+    function get name():String;
 }
 }

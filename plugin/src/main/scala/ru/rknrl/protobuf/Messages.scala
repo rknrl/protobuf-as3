@@ -58,8 +58,8 @@ object Messages {
   def ioMethodPostfix(f: FieldDescriptorProto) =
     f.getType match {
       case TYPE_DOUBLE ⇒ "Double"
-      case TYPE_FIXED64 ⇒ "Fixed64"
-      case TYPE_SFIXED64 ⇒ "SFixed64"
+      case TYPE_FIXED64 ⇒ "Fixed64AsNumber"
+      case TYPE_SFIXED64 ⇒ "SFixed64AsNumber"
       case TYPE_FLOAT ⇒ "Float"
       case TYPE_FIXED32 ⇒ "Fixed32"
       case TYPE_SFIXED32 ⇒ "SFixed32"
@@ -67,10 +67,10 @@ object Messages {
       case TYPE_SINT32 ⇒ "SInt32"
       case TYPE_UINT32 ⇒ "UInt32"
       case TYPE_BOOL ⇒ "Bool"
-      case TYPE_INT64 ⇒ "Int64"
-      case TYPE_UINT64 ⇒ "UInt64"
-      case TYPE_SINT64 ⇒ "SInt64"
-      case TYPE_ENUM ⇒ "Enum"
+      case TYPE_INT64 ⇒ "Int64AsNumber"
+      case TYPE_UINT64 ⇒ "UInt64AsNumber"
+      case TYPE_SINT64 ⇒ "SInt64AsNumber"
+      case TYPE_ENUM ⇒ "EnumId"
       case TYPE_STRING ⇒ "String"
       case TYPE_MESSAGE ⇒ "Message"
       case TYPE_BYTES ⇒ "Bytes"
@@ -144,19 +144,18 @@ object Messages {
   def messageContent(d: DescriptorProto, `package`: String) =
     s"package ${`package`} {\n" +
       imports(d) +
-      s"\tpublic final class ${className(d)} implements IMessage {\n" +
+      s"\tpublic final class ${className(d)} implements Message {\n" +
       messageConstructor(d) +
       fields(d) +
       write(d) +
       writeDelimitedTo(d) +
       read(d) +
-      parseDelimitedFrom(d) +
       writeToString(d) +
       "\t}\n" +
       "}\n"
 
   def imports(d: DescriptorProto) =
-    "\timport com.netease.protobuf.*;\n" +
+    "\timport ru.rknrl.protobuf.*;\n" +
       "\timport flash.utils.Endian;\n" +
       "\timport flash.utils.IDataInput;\n" +
       "\timport flash.utils.IDataOutput;\n" +
@@ -210,7 +209,7 @@ object Messages {
       privateFieldName(f) + ".value"
 
   def write(d: DescriptorProto) =
-    "\t\tpublic final function writeToBuffer(output:WritingBuffer):void {\n" +
+    "\t\tpublic final function writeTo(output:IDataOutput):void {\n" +
       writeFields(d) +
       "\t\t}\n\n"
 
@@ -234,18 +233,12 @@ object Messages {
 
   def writeRepeated(f: FieldDescriptorProto) =
     if (f.hasOptions && f.getOptions.hasPacked)
-      writeRepeatedPacked(f)
+      throw new IllegalArgumentException("Repeated packed option is not supported")
     else
       writeRepeatedFor(f)
 
-  def writeRepeatedPacked(f: FieldDescriptorProto) =
-    "\t\t\tif (" + fieldName(f) + " != null && " + fieldName(f) + ".length > 0) {\n" +
-      "\t\t\t\tWriteUtils.writeTag(output, WireType.LENGTH_DELIMITED, " + fieldNumber(f) + ");\n" +
-      "\t\t\t\tWriteUtils.writePackedRepeated(output, " + writeMethodName(f) + ", " + fieldName(f) + ");\n" +
-      "\t\t\t}\n"
-
   def writeRepeatedFor(f: FieldDescriptorProto) = {
-    val index = fieldName(f) + "$Index"
+    val index = fieldName(f) + "$index"
 
     "\t\t\tfor (var " + index + ":uint = 0; " + index + " < " + fieldName(f) + ".length; " + index + "++) {\n" +
       "\t\t\t\tWriteUtils.writeTag(output, WireType." + as3WireConst(f) + ", " + fieldNumber(f) + ");\n" +
@@ -255,15 +248,17 @@ object Messages {
 
   def writeDelimitedTo(d: DescriptorProto) =
     "\t\tpublic final function writeDelimitedTo(output:IDataOutput):void {\n" +
-      "\t\t\tconst buffer:WritingBuffer = new WritingBuffer();\n" +
-      "\t\t\tWriteUtils.writeMessage(buffer, this);\n" +
-      "\t\t\tbuffer.toNormal(output);\n" +
+      "\t\t\tWriteUtils.writeMessage(output, this);\n" +
       "\t\t}\n\n"
 
   def read(d: DescriptorProto) =
-    "\t\tpublic static function readFromSlice(input:IDataInput, bytesAfterSlice:uint):" + className(d) + " {\n" +
+    "\t\tpublic static function parseDelimitedFrom(input:IDataInput):" + className(d) + " {\n" +
+      "\t\t\tconst length: uint = ReadUtils.readUInt32(input);\n" +
+      "\t\t\tif (input.bytesAvailable < length) {\n" +
+      "\t\t\t\tthrow new IOError('Invalid message length: ' + length);\n" +
+      "\t\t\t}\n" +
+      "\t\t\tconst bytesAfterSlice: uint = input.bytesAvailable - length;\n" +
       readInitVars(d) +
-      "\t\t\tvar afterSlice:uint;\n" +
       "\t\t\twhile (input.bytesAvailable > bytesAfterSlice) {\n" +
       "\t\t\t\tvar tag:uint = ReadUtils.readUInt32(input);\n" +
       "\t\t\t\tswitch (tag >>> 3) {\n" +
@@ -271,6 +266,9 @@ object Messages {
       "\t\t\t\tdefault:\n" +
       "\t\t\t\t\tReadUtils.skip(input, tag & 7);\n" +
       "\t\t\t\t}\n" +
+      "\t\t\t}\n" +
+      "\t\t\tif (input.bytesAvailable != bytesAfterSlice) {\n" +
+      "\t\t\t\tthrow new IOError('Invalid nested message');\n" +
       "\t\t\t}\n" +
       readRequiredChecks(d) +
       readReturn(d) +
@@ -310,14 +308,10 @@ object Messages {
   def readField(f: FieldDescriptorProto) =
     f.getType match {
       case TYPE_MESSAGE ⇒
-        "\t\t\t\t\tafterSlice = ReadUtils.readBytesAfterSlice(input);\n" +
-          "\t\t\t\t\t" + fieldName(f) + " =  " + as3Type(f) + ".readFromSlice(input, afterSlice);\n"
-        "\t\t\t\t\tif (input.bytesAvailable != afterSlice) {\n" +
-          "\t\t\t\t\t\tthrow new IOError('Invalid nested message');\n" +
-          "\t\t\t\t\t}\n"
+        "\t\t\t\t\t" + fieldName(f) + " =  " + as3Type(f) + ".parseDelimitedFrom(input);\n"
 
       case TYPE_ENUM ⇒
-        "\t\t\t\t\t" + fieldName(f) + " = " + as3Type(f) + ".valuesById[ReadUtils.readEnum(input)];\n"
+        "\t\t\t\t\t" + fieldName(f) + " = " + as3Type(f) + ".valuesById[ReadUtils.readEnumId(input)];\n"
 
       case _ ⇒
         if (f.getLabel == LABEL_OPTIONAL && !isNullableType(as3Type(f)))
@@ -360,15 +354,8 @@ object Messages {
       "\t\t\t\t\t\tbreak;\n" +
       "\t\t\t\t\t}\n"
 
-  def fieldElementName(f: FieldDescriptorProto) = fieldName(f) + "$element"
-
   def readRepeatedMessage(f: FieldDescriptorProto) =
-    "\t\t\t\t\tafterSlice = ReadUtils.readBytesAfterSlice(input);\n" +
-      "\t\t\t\t\tconst " + fieldElementName(f) + ":" + as3Type(f) + " = " + as3Type(f) + ".readFromSlice(input, afterSlice);\n" +
-      "\t\t\t\t\t" + fieldName(f) + ".push(" + fieldElementName(f) + ");\n" +
-      "\t\t\t\t\tif (input.bytesAvailable != afterSlice) {\n" +
-      "\t\t\t\t\t\tthrow new IOError('Invalid nested message');\n" +
-      "\t\t\t\t\t}\n"
+    "\t\t\t\t\t" + fieldName(f) + ".push(" + as3Type(f) + ".parseDelimitedFrom(input));\n"
 
   def readRepeatedEnum(f: FieldDescriptorProto) =
     "\t\t\t\t\t" + fieldName(f) + ".push(" + as3Type(f) + ".valuesById[" + readMethodName(f) + "(input)]);"
@@ -386,19 +373,14 @@ object Messages {
 
   def readReturnParams(d: DescriptorProto) = d.getFieldList.map(fieldName)
 
-  def parseDelimitedFrom(d: DescriptorProto) =
-    "\t\tpublic static function parseDelimitedFrom(input:IDataInput):" + className(d) + "{\n" +
-      "\t\t\tinput.endian = Endian.LITTLE_ENDIAN;\n" +
-      "\t\t\tconst bytesAfterSlice: uint = ReadUtils.readBytesAfterSlice(input);\n" +
-      "\t\t\tconst message: " + className(d) + " = " + className(d) + ".readFromSlice(input, bytesAfterSlice);\n" +
-      "\t\t\tif (input.bytesAvailable != bytesAfterSlice) {\n" +
-      "\t\t\t\tthrow new IOError('Invalid nested message');\n" +
-      "\t\t\t}\n" +
-      "\t\t\treturn message;\n" +
-      "\t\t}\n\n"
-
   def writeToString(d: DescriptorProto) =
     "\t\tpublic function toString():String {\n" +
-      "\t\t\treturn messageToString(this);\n" +
+      s"\t\t\treturn '${className(d)}{\\n" +
+      toStringFields(d) +
+      "}'\n" +
       "\t\t}\n\n"
+
+  def toStringFields(d: DescriptorProto) =
+    d.getFieldList.map(f ⇒ fieldName(f) + "='+String(" + privateFieldName(f) + ")+'\\n").mkString
+
 }

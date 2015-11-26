@@ -6,8 +6,13 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
-public interface Enum {
-	function id():int;
+package ru.rknrl.protobuf {
+import org.flexunit.asserts.assertEquals;
+
+public class Int64Test {
+    [Test]
+    public function testRange():void {
+        assertEquals(4294967296.0, Int64.INT_RANGE);
+    }
 }
 }

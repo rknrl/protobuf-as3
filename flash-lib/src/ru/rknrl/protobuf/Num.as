@@ -6,16 +6,20 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
-public class Int {
-    private var _value:int;
+package ru.rknrl.protobuf {
+public class Num {
+    private var _value:Number;
 
-    public function get value():int {
+    public function get value():Number {
         return _value;
     }
 
-    public function Int(value:int) {
+    public function Num(value:Number) {
         _value = value;
+    }
+
+    public function toString():String {
+        return _value.toString();
     }
 }
 }

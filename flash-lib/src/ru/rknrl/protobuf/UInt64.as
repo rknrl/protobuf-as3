@@ -6,10 +6,8 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
-public final class UInt64 {
-    private static const MAX_UINT:Number = Number(int.MAX_VALUE * 2) + 2;
-
+package ru.rknrl.protobuf {
+public class UInt64 {
     public var low:uint;
     public var high:uint;
 
@@ -19,15 +17,11 @@ public final class UInt64 {
     }
 
     public static function fromNumber(n:Number):UInt64 {
-        if (n < 0) throw new Error();
-        var i:UInt64 = new UInt64();
-        i.high = n / MAX_UINT;
-        i.low = n % MAX_UINT;
-        return i;
+        return new UInt64(n, Math.floor(n / Int64.INT_RANGE))
     }
 
-    public function toNumber():Number {
-        return low + high * MAX_UINT;
+    public final function toNumber():Number {
+        return high * Int64.INT_RANGE + low
     }
 }
 }

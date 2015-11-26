@@ -6,11 +6,20 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
-public final class WireType {
-    public static const VARINT:uint = 0;
-    public static const FIXED_64_BIT:uint = 1;
-    public static const LENGTH_DELIMITED:uint = 2;
-    public static const FIXED_32_BIT:uint = 5;
+package ru.rknrl.protobuf {
+public class UInt {
+    private var _value:uint;
+
+    public function get value():uint {
+        return _value;
+    }
+
+    public function UInt(value:uint) {
+        _value = value;
+    }
+
+    public function toString():String {
+        return _value.toString();
+    }
 }
 }

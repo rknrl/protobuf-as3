@@ -18,7 +18,7 @@ object Enums {
     val className = e.getName
 
     s"package ${`package`} {\n" +
-      "\timport com.netease.protobuf.Enum;\n" +
+      "\timport ru.rknrl.protobuf.Enum;\n" +
       s"\tpublic final class $className implements Enum {\n" +
       enumConsts(e).mkString +
       "\t\tprivate var _id:int;\n" +
@@ -27,10 +27,10 @@ object Enums {
       "\t\t\t_id=id;\n" +
       "\t\t\t_name=name;\n" +
       "\t\t}\n\n" +
-      "\t\tpublic function id():int {\n" +
+      "\t\tpublic function get id():int {\n" +
       "\t\t\treturn _id;\n" +
       "\t\t}\n" +
-      "\t\tpublic function name():String {\n" +
+      "\t\tpublic function get name():String {\n" +
       "\t\t\treturn _name;\n" +
       "\t\t}\n" +
       s"\t\tpublic static const values : Vector.<$className> = new <$className>[\n" +
@@ -39,6 +39,7 @@ object Enums {
       "\t\tpublic static const valuesById : Object = {\n" +
       enumIdToValues(e) + "\n" +
       "\t\t}\n" +
+      enumToString(e) +
       "\t}\n" +
       "}\n"
   }
@@ -54,4 +55,10 @@ object Enums {
 
   def enumIdToValues(e: EnumDescriptorProto) =
     e.getValueList.map(v ⇒ "\t\t\t" + v.getNumber + ": " + v.getName).mkString(",\n")
+
+  def enumToString(e: EnumDescriptorProto) =
+    "\t\tpublic function toString():String {\n" +
+      s"\t\t\treturn '${e.getName}'\n" +
+      "\t\t}\n\n"
+
 }

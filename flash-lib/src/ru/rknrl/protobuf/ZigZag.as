@@ -6,7 +6,9 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
+package ru.rknrl.protobuf {
+
+// Based on com.netease.protobuf (c) Yang Bo (pop.atry@gmail.com)
 public final class ZigZag {
     public static function encode32(n:int):int {
         return (n << 1) ^ (n >> 31);

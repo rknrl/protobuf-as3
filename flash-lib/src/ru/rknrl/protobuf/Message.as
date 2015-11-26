@@ -6,14 +6,10 @@
 //     |:\/__/   |:|  |     |:/  /   |:\/__/   \:\__\
 //      \|__|     \|__|     \/__/     \|__|     \/__/
 
-package com.netease.protobuf {
-import flash.utils.ByteArray;
+package ru.rknrl.protobuf {
+import flash.utils.IDataOutput;
 
-public function stringToByteArray(s:String):ByteArray {
-    const ba:ByteArray = new ByteArray();
-    for (var i:uint = 0; i < s.length; ++i) {
-        ba.writeByte(s.charCodeAt(i));
-    }
-    return ba;
+public interface Message {
+    function writeTo(output:IDataOutput):void
 }
 }
