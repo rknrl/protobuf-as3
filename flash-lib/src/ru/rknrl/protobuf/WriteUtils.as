@@ -29,8 +29,8 @@ public final class WriteUtils {
         }
     }
 
-    public static function writeTag(output:IDataOutput, wireType:uint, number:uint):void {
-        writeUInt32(output, (number << 3) | wireType);
+    public static function writeTag(output:IDataOutput, wireType:uint, fieldNumber:uint):void {
+        writeUInt32(output, (fieldNumber << 3) | wireType);
     }
 
     public static function writeDouble(output:IDataOutput, value:Number):void {
@@ -135,10 +135,9 @@ public final class WriteUtils {
                 ZigZag.encode64high(value.low, value.high))
     }
 
-    private static const byteArray:ByteArray = new ByteArray();
-
     public static function writeMessage(output:IDataOutput, value:Message):void {
-        byteArray.clear();
+        const byteArray: ByteArray = new ByteArray();
+        byteArray.endian = Endian.LITTLE_ENDIAN;
         value.writeTo(byteArray);
         writeUInt32(output, byteArray.length);
         output.writeBytes(byteArray);

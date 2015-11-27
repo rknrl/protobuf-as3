@@ -23,7 +23,8 @@ public final class ReadUtils {
                 input.readInt();
                 break;
             case WireType.LENGTH_DELIMITED:
-                for (var i:uint = readUInt32(input); i != 0; i--) {
+                const length:uint = readUInt32(input);
+                for (var i:uint = 0; i < length; i++) {
                     input.readByte()
                 }
                 break;

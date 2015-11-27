@@ -231,13 +231,10 @@ object Messages {
       "\t\t\t\t" + writeMethodName(f) + "(output, " + optionalFieldValue(f) + ");\n" +
       "\t\t\t}\n"
 
-  def writeRepeated(f: FieldDescriptorProto) =
+  def writeRepeated(f: FieldDescriptorProto) = {
     if (f.hasOptions && f.getOptions.hasPacked)
       throw new IllegalArgumentException("Repeated packed option is not supported")
-    else
-      writeRepeatedFor(f)
 
-  def writeRepeatedFor(f: FieldDescriptorProto) = {
     val index = fieldName(f) + "$index"
 
     "\t\t\tfor (var " + index + ":uint = 0; " + index + " < " + fieldName(f) + ".length; " + index + "++) {\n" +
