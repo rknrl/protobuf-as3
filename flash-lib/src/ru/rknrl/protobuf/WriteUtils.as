@@ -83,8 +83,11 @@ public final class WriteUtils {
     }
 
     public static function writeString(output:IDataOutput, value:String):void {
-        writeUInt32(output, value.length);
-        output.writeUTFBytes(value);
+        const byteArray: ByteArray = new ByteArray();
+        byteArray.endian = Endian.LITTLE_ENDIAN;
+        byteArray.writeUTFBytes(value);
+        writeUInt32(output, byteArray.length);
+        output.writeBytes(byteArray);
     }
 
     public static function writeBytes(output:IDataOutput, value:ByteArray):void {
