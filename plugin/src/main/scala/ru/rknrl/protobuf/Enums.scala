@@ -19,6 +19,7 @@ object Enums {
 
     s"package ${`package`} {\n" +
       "\timport ru.rknrl.protobuf.Enum;\n" +
+      "\timport flash.utils.Dictionary;\n" +
       s"\tpublic final class $className implements Enum {\n" +
       enumConsts(e).mkString +
       "\t\tprivate var _id:int;\n" +
@@ -36,9 +37,8 @@ object Enums {
       s"\t\tpublic static const values : Vector.<$className> = new <$className>[\n" +
       enumValues(e) + "\n" +
       s"\t\t];\n" +
-      "\t\tpublic static const valuesById : Object = {\n" +
+      "\t\tpublic static const valuesById : Dictionary = new Dictionary()\n" +
       enumIdToValues(e) + "\n" +
-      "\t\t}\n" +
       enumToString(e) +
       "\t}\n" +
       "}\n"
@@ -54,7 +54,7 @@ object Enums {
     e.getValueList.map(v ⇒ "\t\t\t" + v.getName).mkString(",\n")
 
   def enumIdToValues(e: EnumDescriptorProto) =
-    e.getValueList.map(v ⇒ "\t\t\t" + v.getNumber + ": " + v.getName).mkString(",\n")
+    e.getValueList.map(v ⇒ "\t\tvaluesById[" + v.getNumber + "] = " + v.getName + ";\n").mkString
 
   def enumToString(e: EnumDescriptorProto) =
     "\t\tpublic function toString():String {\n" +
